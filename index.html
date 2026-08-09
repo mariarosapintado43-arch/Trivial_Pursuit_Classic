@@ -80,6 +80,21 @@
             stroke-width: 3;
         }
 
+        .square-cell.white-tile {
+            fill: #f5f5f5 !important;
+        }
+
+        .hq-square {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            stroke: #fff;
+            stroke-width: 2;
+        }
+
+        .hq-square:hover {
+            filter: brightness(1.2);
+        }
+
         .center-hexagon {
             cursor: pointer;
             transition: all 0.2s ease;
@@ -496,6 +511,17 @@
         .hidden {
             display: none !important;
         }
+
+        /* HQ Square Styling */
+        .hq-triangle {
+            fill: #fff;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+        }
+
+        .hq-cherub {
+            font-size: 12px;
+            text-anchor: middle;
+        }
     </style>
 </head>
 <body>
@@ -517,56 +543,75 @@
                     <circle cx="300" cy="300" r="280" fill="none" stroke="#6ec6d6" stroke-width="2" opacity="0.3"/>
                     
                     <!-- Centro (Hexágono) -->
-                    <polygon points="300,250 350,275 350,325 300,350 250,325 250,275" class="center-hexagon" fill="#f1c40f"/>
+                    <polygon points="300,250 350,275 350,325 300,350 250,325 250,275" class="center-hexagon" fill="#f1c40f" data-type="center"/>
                     <text x="300" y="310" text-anchor="middle" font-size="20" fill="#000" font-weight="bold" pointer-events="none">🏠</text>
                     
-                    <!-- 6 Radios con casillas -->
-                    <!-- Radio 1: Arriba (Amarillo) -->
-                    <g>
-                        <rect x="280" y="80" width="40" height="40" class="square-cell yellow" fill="#f1c40f" data-category="historia" data-pos="1"/>
-                        <rect x="280" y="130" width="40" height="40" class="square-cell yellow" fill="#f1c40f" data-category="historia" data-pos="2"/>
-                        <rect x="280" y="180" width="40" height="40" class="square-cell yellow" fill="#f1c40f" data-category="historia" data-pos="3"/>
-                        <circle cx="300" cy="230" r="12" class="square-cell" fill="#FFD700" data-category="historia"/>
+                    <!-- RADIO 1: AMARILLO (Historia) -->
+                    <rect x="280" y="80" width="40" height="40" class="square-cell" fill="#f1c40f" stroke="#fff" data-category="historia" data-type="normal"/>
+                    <rect x="280" y="130" width="40" height="40" class="square-cell white-tile" fill="#f5f5f5" stroke="#999" data-type="retry"/>
+                    <rect x="280" y="180" width="40" height="40" class="square-cell" fill="#f1c40f" stroke="#fff" data-category="historia" data-type="normal"/>
+                    <g data-type="hq" data-category="historia">
+                        <rect x="270" y="220" width="60" height="60" class="hq-square" fill="#f1c40f" stroke="#fff"/>
+                        <polygon points="300,225 320,245 280,245" class="hq-triangle" fill="#FFD700"/>
+                        <text x="300" y="280" class="hq-cherub" fill="#000">👼</text>
                     </g>
 
-                    <!-- Radio 2: Arriba-Derecha (Rosa) -->
+                    <!-- RADIO 2: ROSA (Entretenimiento) -->
                     <g>
-                        <rect x="420" y="130" width="40" height="40" class="square-cell pink" fill="#e91e63" data-category="entretenimiento" data-pos="4" transform="rotate(-60 440 150)"/>
-                        <rect x="435" y="160" width="40" height="40" class="square-cell pink" fill="#e91e63" data-category="entretenimiento" data-pos="5" transform="rotate(-60 455 180)"/>
-                        <rect x="450" y="190" width="40" height="40" class="square-cell pink" fill="#e91e63" data-category="entretenimiento" data-pos="6" transform="rotate(-60 470 210)"/>
-                        <circle cx="470" cy="235" r="12" class="square-cell" fill="#e91e63" data-category="entretenimiento"/>
+                        <rect x="420" y="130" width="40" height="40" class="square-cell" fill="#e91e63" stroke="#fff" data-category="entretenimiento" data-type="normal" transform="rotate(-60 440 150)"/>
+                        <rect x="440" y="165" width="40" height="40" class="square-cell white-tile" fill="#f5f5f5" stroke="#999" data-type="retry" transform="rotate(-60 460 185)"/>
+                        <rect x="460" y="200" width="40" height="40" class="square-cell" fill="#e91e63" stroke="#fff" data-category="entretenimiento" data-type="normal" transform="rotate(-60 480 220)"/>
+                        <g data-type="hq" data-category="entretenimiento" transform="translate(470, 235)">
+                            <rect x="-30" y="-30" width="60" height="60" class="hq-square" fill="#e91e63" stroke="#fff"/>
+                            <polygon points="0,-25 20,-5 -20,-5" class="hq-triangle" fill="#FF1493"/>
+                            <text x="0" y="25" class="hq-cherub" fill="#000">👼</text>
+                        </g>
                     </g>
 
-                    <!-- Radio 3: Abajo-Derecha (Verde) -->
+                    <!-- RADIO 3: VERDE (Ciencias) -->
                     <g>
-                        <rect x="420" y="430" width="40" height="40" class="square-cell green" fill="#2ecc71" data-category="ciencias" data-pos="7" transform="rotate(60 440 450)"/>
-                        <rect x="435" y="400" width="40" height="40" class="square-cell green" fill="#2ecc71" data-category="ciencias" data-pos="8" transform="rotate(60 455 420)"/>
-                        <rect x="450" y="370" width="40" height="40" class="square-cell green" fill="#2ecc71" data-category="ciencias" data-pos="9" transform="rotate(60 470 390)"/>
-                        <circle cx="470" cy="325" r="12" class="square-cell" fill="#2ecc71" data-category="ciencias"/>
+                        <rect x="420" y="430" width="40" height="40" class="square-cell" fill="#2ecc71" stroke="#fff" data-category="ciencias" data-type="normal" transform="rotate(60 440 450)"/>
+                        <rect x="440" y="395" width="40" height="40" class="square-cell white-tile" fill="#f5f5f5" stroke="#999" data-type="retry" transform="rotate(60 460 415)"/>
+                        <rect x="460" y="360" width="40" height="40" class="square-cell" fill="#2ecc71" stroke="#fff" data-category="ciencias" data-type="normal" transform="rotate(60 480 380)"/>
+                        <g data-type="hq" data-category="ciencias" transform="translate(470, 325)">
+                            <rect x="-30" y="-30" width="60" height="60" class="hq-square" fill="#2ecc71" stroke="#fff"/>
+                            <polygon points="0,25 20,5 -20,5" class="hq-triangle" fill="#27AE60"/>
+                            <text x="0" y="-10" class="hq-cherub" fill="#000">👼</text>
+                        </g>
                     </g>
 
-                    <!-- Radio 4: Abajo (Naranja) -->
-                    <g>
-                        <rect x="280" y="480" width="40" height="40" class="square-cell orange" fill="#e67e22" data-category="deportes" data-pos="10"/>
-                        <rect x="280" y="430" width="40" height="40" class="square-cell orange" fill="#e67e22" data-category="deportes" data-pos="11"/>
-                        <rect x="280" y="380" width="40" height="40" class="square-cell orange" fill="#e67e22" data-category="deportes" data-pos="12"/>
-                        <circle cx="300" cy="330" r="12" class="square-cell" fill="#e67e22" data-category="deportes"/>
+                    <!-- RADIO 4: NARANJA (Deportes) -->
+                    <rect x="280" y="480" width="40" height="40" class="square-cell" fill="#e67e22" stroke="#fff" data-category="deportes" data-type="normal"/>
+                    <rect x="280" y="430" width="40" height="40" class="square-cell white-tile" fill="#f5f5f5" stroke="#999" data-type="retry"/>
+                    <rect x="280" y="380" width="40" height="40" class="square-cell" fill="#e67e22" stroke="#fff" data-category="deportes" data-type="normal"/>
+                    <g data-type="hq" data-category="deportes">
+                        <rect x="270" y="320" width="60" height="60" class="hq-square" fill="#e67e22" stroke="#fff"/>
+                        <polygon points="300,365 320,345 280,345" class="hq-triangle" fill="#D35400"/>
+                        <text x="300" y="340" class="hq-cherub" fill="#000">👼</text>
                     </g>
 
-                    <!-- Radio 5: Abajo-Izquierda (Marrón) -->
+                    <!-- RADIO 5: MARRÓN (Arte) -->
                     <g>
-                        <rect x="140" y="430" width="40" height="40" class="square-cell brown" fill="#8B4513" data-category="arte" data-pos="13" transform="rotate(-60 160 450)"/>
-                        <rect x="125" y="400" width="40" height="40" class="square-cell brown" fill="#8B4513" data-category="arte" data-pos="14" transform="rotate(-60 145 420)"/>
-                        <rect x="110" y="370" width="40" height="40" class="square-cell brown" fill="#8B4513" data-category="arte" data-pos="15" transform="rotate(-60 130 390)"/>
-                        <circle cx="90" cy="325" r="12" class="square-cell" fill="#8B4513" data-category="arte"/>
+                        <rect x="140" y="430" width="40" height="40" class="square-cell" fill="#8B4513" stroke="#fff" data-category="arte" data-type="normal" transform="rotate(-60 160 450)"/>
+                        <rect x="120" y="395" width="40" height="40" class="square-cell white-tile" fill="#f5f5f5" stroke="#999" data-type="retry" transform="rotate(-60 140 415)"/>
+                        <rect x="100" y="360" width="40" height="40" class="square-cell" fill="#8B4513" stroke="#fff" data-category="arte" data-type="normal" transform="rotate(-60 120 380)"/>
+                        <g data-type="hq" data-category="arte" transform="translate(90, 325)">
+                            <rect x="-30" y="-30" width="60" height="60" class="hq-square" fill="#8B4513" stroke="#fff"/>
+                            <polygon points="0,25 20,5 -20,5" class="hq-triangle" fill="#654321"/>
+                            <text x="0" y="-10" class="hq-cherub" fill="#fff">👼</text>
+                        </g>
                     </g>
 
-                    <!-- Radio 6: Arriba-Izquierda (Cyan) -->
+                    <!-- RADIO 6: CYAN (Geografía) -->
                     <g>
-                        <rect x="140" y="130" width="40" height="40" class="square-cell cyan" fill="#6ec6d6" data-category="geografia" data-pos="16" transform="rotate(60 160 150)"/>
-                        <rect x="125" y="160" width="40" height="40" class="square-cell cyan" fill="#6ec6d6" data-category="geografia" data-pos="17" transform="rotate(60 145 180)"/>
-                        <rect x="110" y="190" width="40" height="40" class="square-cell cyan" fill="#6ec6d6" data-category="geografia" data-pos="18" transform="rotate(60 130 210)"/>
-                        <circle cx="90" cy="235" r="12" class="square-cell" fill="#6ec6d6" data-category="geografia"/>
+                        <rect x="140" y="130" width="40" height="40" class="square-cell" fill="#6ec6d6" stroke="#fff" data-category="geografia" data-type="normal" transform="rotate(60 160 150)"/>
+                        <rect x="120" y="165" width="40" height="40" class="square-cell white-tile" fill="#f5f5f5" stroke="#999" data-type="retry" transform="rotate(60 140 185)"/>
+                        <rect x="100" y="200" width="40" height="40" class="square-cell" fill="#6ec6d6" stroke="#fff" data-category="geografia" data-type="normal" transform="rotate(60 120 220)"/>
+                        <g data-type="hq" data-category="geografia" transform="translate(90, 235)">
+                            <rect x="-30" y="-30" width="60" height="60" class="hq-square" fill="#6ec6d6" stroke="#fff"/>
+                            <polygon points="0,-25 20,-5 -20,-5" class="hq-triangle" fill="#5BA6AA"/>
+                            <text x="0" y="25" class="hq-cherub" fill="#000">👼</text>
+                        </g>
                     </g>
 
                     <!-- Líneas de conexión -->
