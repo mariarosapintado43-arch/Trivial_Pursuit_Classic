@@ -134,61 +134,50 @@ const questions = {
     ]
 };
 
-// Estado del juego
-let gameState = {
-    players: [],
-    currentPlayerIndex: 0,
-    diceRoll: 0,
-    selectedCategory: null,
-    isAnswering: false
-};
-
-// Colores predefinidos para jugadores
-const playerColors = [
-    { name: 'Rojo', hex: '#FF6B6B', class: 'color-red' },
-    { name: 'Azul', hex: '#4ECDC4', class: 'color-blue' },
-    { name: 'Amarillo', hex: '#FFD93D', class: 'color-yellow' },
-    { name: 'Verde', hex: '#6BCB77', class: 'color-green' },
-    { name: 'Morado', hex: '#A78BFA', class: 'color-purple' },
-    { name: 'Naranja', hex: '#FF9F43', class: 'color-orange' }
-];
-
-// Mapeo de categorías a colores
-const categoryColors = {
-    historia: '#FFD700',      // Amarillo
-    geografia: '#87CEEB',     // Azul claro
-    ciencias: '#90EE90',      // Verde
-    arte: '#A78BFA',          // Morado
-    entretenimiento: '#FFB6C1', // Rosa
-    deportes: '#FFA500'       // Naranja
-};
-
 const categoryNames = {
     historia: 'Historia',
     geografia: 'Geografía',
-    ciencias: 'Ciencias y Naturaleza',
-    arte: 'Arte y Literatura',
+    ciencias: 'Ciencias',
+    arte: 'Arte',
     entretenimiento: 'Entretenimiento',
-    deportes: 'Deportes y Pasatiempos'
+    deportes: 'Deportes'
 };
 
-// Inicialización
-function initGame() {
-    togglePlayerSetup();
-}
+const categoryEmojis = {
+    historia: '📜',
+    geografia: '🌍',
+    ciencias: '🔬',
+    arte: '🎨',
+    entretenimiento: '🎬',
+    deportes: '⚽'
+};
 
-// Mostrar/ocultar modal de configuración de jugadores
-function togglePlayerSetup() {
+const playerColors = [
+    '#FF6B6B', '#4ECDC4', '#FFD93D', '#6BCB77', '#A78BFA', '#FF9F43'
+];
+
+let gameState = {
+    players: [],
+    currentPlayerIdx: 0,
+    diceValue: 0,
+    selectedCategory: null,
+    gameStarted: false,
+    isAnswering: false
+};
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('setupModal').classList.add('show');
+    updatePlayerInputs();
+});
+
+// Mostrar/ocultar modal de configuración
+function toggleSetup() {
     const modal = document.getElementById('setupModal');
-    if (modal.classList.contains('show')) {
-        modal.classList.remove('show');
-    } else {
-        modal.classList.add('show');
-        updatePlayerInputs();
-    }
+    modal.classList.toggle('show');
 }
 
-// Actualizar inputs de jugadores según el número seleccionado
+// Actualizar inputs de jugadores
 function updatePlayerInputs() {
     const count = parseInt(document.getElementById('playerCount').value);
     const container = document.getElementById('playerInputs');
@@ -196,10 +185,13 @@ function updatePlayerInputs() {
 
     for (let i = 0; i < count; i++) {
         const div = document.createElement('div');
-        div.className = 'player-input-group';
+        div.style.marginBottom = '15px';
         div.innerHTML = `
-            <input type="text" id="player${i}Name" placeholder="Nombre del jugador ${i + 1}" value="Jugador ${i + 1}">
-            <input type="color" id="player${i}Color" class="color-picker" value="${playerColors[i].hex}">
+            <label style="color: #6ec6d6; display: block; margin-bottom: 5px;">Jugador ${i + 1}:</label>
+            <input type="text" id="player${i}Name" placeholder="Nombre" value="Jugador ${i + 1}" 
+                   style="width: 100%; padding: 8px; border-radius: 6px; border: none; margin-bottom: 8px;">
+            <input type="color" id="player${i}Color" value="${playerColors[i]}" 
+                   style="width: 100%; height: 40px; border: none; border-radius: 6px; cursor: pointer;">
         `;
         container.appendChild(div);
     }
@@ -217,196 +209,159 @@ function startGame() {
             id: i,
             name: name,
             color: color,
-            position: 30,  // Centro del tablero
-            wedges: new Set(),  // Quesitos por categoría
-            isAtCenter: true
+            position: 0,
+            wedges: new Set(),
+            points: 0
         });
     }
 
-    gameState.currentPlayerIndex = 0;
-    gameState.diceRoll = 0;
-
-    // Cerrar modal y iniciar
+    gameState.currentPlayerIdx = 0;
+    gameState.gameStarted = true;
     document.getElementById('setupModal').classList.remove('show');
     updateUI();
-    renderBoard();
 }
 
 // Tirar dado
 function rollDice() {
     if (gameState.isAnswering) return;
 
-    gameState.diceRoll = Math.floor(Math.random() * 6) + 1;
-    document.getElementById('diceResult').innerHTML = `🎲 ${gameState.diceRoll}`;
+    gameState.diceValue = Math.floor(Math.random() * 6) + 1;
+    document.getElementById('rollBtn').disabled = true;
 
-    // Mostrar animación
-    document.getElementById('diceBtn').disabled = true;
+    // Animar dado
+    const dice = document.getElementById('dice3d');
+    dice.style.transform = `rotateX(${Math.random() * 720}deg) rotateY(${Math.random() * 720}deg) rotateZ(${Math.random() * 720}deg)`;
+
     setTimeout(() => {
-        movePlayer(gameState.diceRoll);
-        document.getElementById('diceBtn').disabled = false;
-    }, 1000);
+        rotateDiceToValue(gameState.diceValue);
+        document.getElementById('diceValue').textContent = gameState.diceValue;
+        document.getElementById('rollBtn').disabled = false;
+        movePlayer();
+    }, 800);
+}
+
+// Rotar dado al valor correcto
+function rotateDiceToValue(value) {
+    const dice = document.getElementById('dice3d');
+    const rotations = {
+        1: 'rotateY(0deg) rotateX(0deg)',
+        2: 'rotateY(180deg) rotateX(0deg)',
+        3: 'rotateY(90deg) rotateX(0deg)',
+        4: 'rotateY(-90deg) rotateX(0deg)',
+        5: 'rotateX(90deg) rotateY(0deg)',
+        6: 'rotateX(-90deg) rotateY(0deg)'
+    };
+    dice.style.transform = rotations[value];
 }
 
 // Mover jugador
-function movePlayer(steps) {
-    const player = gameState.players[gameState.currentPlayerIndex];
-    player.position = (player.position + steps) % 30;
-    player.isAtCenter = player.position === 30;
+function movePlayer() {
+    const player = gameState.players[gameState.currentPlayerIdx];
+    player.position = (player.position + gameState.diceValue) % 18;
 
-    renderBoard();
-
-    // Verificar en qué casilla cayó
+    // Verificar si cayó en una casilla especial
     setTimeout(() => {
-        checkLanding();
-    }, 500);
+        checkPosition();
+    }, 300);
 }
 
-// Verificar dónde cayó el jugador
-function checkLanding() {
-    const player = gameState.players[gameState.currentPlayerIndex];
-    
-    if (player.position === 30) {
-        // Centro del tablero
-        showMessage('¡Llegaste al centro! Elige una categoría para tu pregunta.');
-        showCategorySelector();
+// Verificar posición actual
+function checkPosition() {
+    const player = gameState.players[gameState.currentPlayerIdx];
+    const square = document.querySelector(`[data-pos="${player.position + 1}"]`);
+
+    if (square) {
+        const category = square.getAttribute('data-category');
+        gameState.selectedCategory = category;
+        askQuestion(category);
     } else {
-        // Obtener la categoría de la casilla
-        const landingSquare = document.querySelector(`[data-pos="${player.position}"]`);
-        if (landingSquare) {
-            const category = landingSquare.getAttribute('data-category');
-            gameState.selectedCategory = category;
-            askQuestion(category);
-        }
+        nextTurn();
     }
-}
-
-// Mostrar selector de categoría
-function showCategorySelector() {
-    const player = gameState.players[gameState.currentPlayerIndex];
-    const categories = Object.keys(categoryNames);
-    
-    let html = `
-        <div class="question-modal">
-            <h2>Elige una categoría</h2>
-            <div class="answer-options">
-    `;
-
-    categories.forEach(cat => {
-        html += `
-            <button class="answer-btn" onclick="selectCategory('${cat}')">
-                ${categoryNames[cat]}
-            </button>
-        `;
-    });
-
-    html += `</div></div>`;
-    document.getElementById('answerContent').innerHTML = html;
-    document.getElementById('answerModal').classList.add('show');
-}
-
-// Seleccionar categoría
-function selectCategory(category) {
-    gameState.selectedCategory = category;
-    document.getElementById('answerModal').classList.remove('show');
-    askQuestion(category);
 }
 
 // Hacer pregunta
 function askQuestion(category) {
+    gameState.isAnswering = true;
     const categoryQuestions = questions[category];
     const question = categoryQuestions[Math.floor(Math.random() * categoryQuestions.length)];
-    
-    gameState.isAnswering = true;
 
-    const player = gameState.players[gameState.currentPlayerIndex];
-    const categoryName = categoryNames[category];
-    const categoryColor = categoryColors[category];
+    document.getElementById('categoryTitle').innerHTML = `${categoryEmojis[category]} ${categoryNames[category]}`;
 
-    let html = `
-        <div class="question-modal">
-            <div class="category-badge" style="background: ${categoryColor}">
-                ${categoryName}
-            </div>
-            <h2>Pregunta</h2>
-            <p class="question-text">${question.question}</p>
-            <div class="answer-options">
-    `;
+    let html = `<div class="question-text">${question.question}</div>`;
+    html += '<div class="answer-options">';
 
-    question.options.forEach((option, index) => {
-        html += `
-            <button class="answer-btn" onclick="submitAnswer(${index}, ${question.correct})">
-                ${option}
-            </button>
-        `;
+    question.options.forEach((option, idx) => {
+        html += `<button class="answer-btn" onclick="answerQuestion(${idx}, ${question.correct}, '${category}')">
+                    ${option}
+                </button>`;
     });
 
-    html += `</div></div>`;
+    html += '</div>';
     document.getElementById('answerContent').innerHTML = html;
     document.getElementById('answerModal').classList.add('show');
 }
 
-// Enviar respuesta
-function submitAnswer(selected, correct) {
-    const player = gameState.players[gameState.currentPlayerIndex];
-    const category = gameState.selectedCategory;
+// Responder pregunta
+function answerQuestion(selected, correct, category) {
+    const player = gameState.players[gameState.currentPlayerIdx];
     const isCorrect = selected === correct;
 
-    let resultHTML = `<div class="question-modal">`;
+    // Deshabilitar todos los botones
+    document.querySelectorAll('.answer-btn').forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent.includes(document.querySelectorAll('.answer-btn')[correct].textContent)) {
+            btn.classList.add('correct');
+        } else if (btn === event.target && !isCorrect) {
+            btn.classList.add('incorrect');
+        }
+    });
 
     if (isCorrect) {
-        resultHTML += `
-            <h2 style="color: #51cf66;">¡Correcto! 🎉</h2>
-            <p>Ganaste un quesito de ${categoryNames[category]}</p>
-        `;
         player.wedges.add(category);
+        player.points += 100;
 
-        // Verificar si ganó
-        if (player.wedges.size === 6) {
-            resultHTML += `
-                <h3 style="color: #667eea; margin-top: 20px;">¡Ahora ve al centro para la pregunta final!</h3>
-            `;
-        }
+        // Mostrar mensaje de éxito
+        setTimeout(() => {
+            showMessage(`¡Correcto! Ganaste el quesito de ${categoryNames[category]} 🥧`);
+        }, 200);
     } else {
-        resultHTML += `
-            <h2 style="color: #ff6b6b;">Incorrecto ❌</h2>
-            <p>Lo siento, esa no es la respuesta correcta.</p>
-        `;
+        player.points = Math.max(0, player.points - 50);
+        setTimeout(() => {
+            showMessage(`Incorrecto ❌ La respuesta correcta era la opción ${String.fromCharCode(65 + correct)}`);
+        }, 200);
     }
 
-    resultHTML += `
-        <button class="btn btn-primary mt-20" onclick="nextTurn()">Siguiente turno</button>
-    </div>
-    `;
+    setTimeout(() => {
+        closeAnswer();
+        updateUI();
+        nextTurn();
+    }, 2000);
+}
 
-    document.getElementById('answerContent').innerHTML = resultHTML;
+// Mostrar mensaje
+function showMessage(msg) {
+    const area = document.getElementById('questionArea');
+    area.innerHTML = `<p style="color: #f1c40f; text-align: center; font-weight: bold;">${msg}</p>`;
+}
+
+// Cerrar modal de respuesta
+function closeAnswer() {
+    document.getElementById('answerModal').classList.remove('show');
 }
 
 // Siguiente turno
 function nextTurn() {
     gameState.isAnswering = false;
-    gameState.diceRoll = 0;
-    gameState.currentPlayerIndex = (gameState.currentPlayerIndex + 1) % gameState.players.length;
-    
-    closeAnswerModal();
+    gameState.diceValue = 0;
+    gameState.currentPlayerIdx = (gameState.currentPlayerIdx + 1) % gameState.players.length;
+    document.getElementById('diceValue').textContent = '-';
     updateUI();
-    renderBoard();
-}
-
-// Cerrar modal de respuesta
-function closeAnswerModal() {
-    document.getElementById('answerModal').classList.remove('show');
-}
-
-// Mostrar mensaje
-function showMessage(msg) {
-    // Implementar si es necesario
 }
 
 // Actualizar interfaz
 function updateUI() {
     updatePlayersList();
-    updateTurnDisplay();
-    updateQuestionArea();
+    updateTurnInfo();
 }
 
 // Actualizar lista de jugadores
@@ -414,110 +369,49 @@ function updatePlayersList() {
     const container = document.getElementById('playersList');
     container.innerHTML = '';
 
-    gameState.players.forEach((player, index) => {
-        const isActive = index === gameState.currentPlayerIndex;
-        const wedgeIcons = Array.from(player.wedges).map(w => '🥧').join('');
-        
+    gameState.players.forEach((player, idx) => {
+        const isActive = idx === gameState.currentPlayerIdx;
+        const wedges = Array.from(player.wedges).map(w => '🥧').join('');
+
         const div = document.createElement('div');
         div.className = `player-item ${isActive ? 'active' : ''}`;
         div.innerHTML = `
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="player-color-indicator" style="background: ${player.color}"></div>
+            <div class="player-name">
+                <div class="player-color-dot" style="background: ${player.color}"></div>
                 <span>${player.name}</span>
             </div>
-            <div class="player-wedges">${wedgeIcons}</div>
+            <div class="player-wedges">
+                <span class="wedge-icon">${wedges || '-'}</span>
+            </div>
         `;
         container.appendChild(div);
     });
 }
 
-// Actualizar display de turno
-function updateTurnDisplay() {
-    const player = gameState.players[gameState.currentPlayerIndex];
+// Actualizar info de turno
+function updateTurnInfo() {
+    const player = gameState.players[gameState.currentPlayerIdx];
     const html = `
         <p><strong>Jugador:</strong> ${player.name}</p>
         <p><strong>Quesitos:</strong> ${player.wedges.size}/6</p>
-        <p><strong>Posición:</strong> ${player.position === 30 ? 'Centro' : `Casilla ${player.position}`}</p>
+        <p><strong>Puntos:</strong> ${player.points}</p>
+        <p style="margin-top: 10px; color: #f1c40f;">👉 ${player.name}, ¡tira el dado!</p>
     `;
-    document.getElementById('currentTurn').innerHTML = html;
-}
-
-// Actualizar área de preguntas
-function updateQuestionArea() {
-    const html = `
-        <p>Presiona el botón para tirar el dado y comenzar tu turno.</p>
-    `;
-    document.getElementById('questionArea').innerHTML = html;
-}
-
-// Renderizar tablero (fichas de jugadores)
-function renderBoard() {
-    const container = document.getElementById('piecesContainer');
-    container.innerHTML = '';
-
-    const positions = {
-        30: { x: 300, y: 300 }  // Centro
-    };
-
-    // Calcular posiciones de otras casillas (aproximado)
-    for (let i = 0; i < 30; i++) {
-        const angle = (i / 30) * Math.PI * 2;
-        const radius = 140;
-        positions[i] = {
-            x: 300 + Math.cos(angle) * radius,
-            y: 300 + Math.sin(angle) * radius
-        };
-    }
-
-    gameState.players.forEach((player, index) => {
-        const pos = positions[player.position];
-        const piece = document.createElement('div');
-        piece.className = 'player-piece';
-        piece.style.left = (pos.x - 15) + 'px';
-        piece.style.top = (pos.y - 15) + 'px';
-        piece.style.background = player.color;
-        piece.textContent = index + 1;
-        piece.title = player.name;
-        
-        container.appendChild(piece);
-    });
+    document.getElementById('turnInfo').innerHTML = html;
 }
 
 // Resetear juego
 function resetGame() {
     gameState = {
         players: [],
-        currentPlayerIndex: 0,
-        diceRoll: 0,
+        currentPlayerIdx: 0,
+        diceValue: 0,
         selectedCategory: null,
+        gameStarted: false,
         isAnswering: false
     };
-    
-    document.getElementById('diceResult').innerHTML = '';
-    document.getElementById('answerModal').classList.remove('show');
     document.getElementById('setupModal').classList.add('show');
     updatePlayerInputs();
-    renderBoard();
+    document.getElementById('diceValue').textContent = '-';
+    document.getElementById('questionArea').innerHTML = '<p style="color: #999; font-size: 0.9em;">Las preguntas aparecerán aquí</p>';
 }
-
-// Event listeners
-document.addEventListener('DOMContentLoaded', function() {
-    // Abrir modal de configuración al cargar
-    setTimeout(() => {
-        document.getElementById('setupModal').classList.add('show');
-        updatePlayerInputs();
-    }, 500);
-});
-
-// Cerrar modal al hacer clic fuera
-window.onclick = function(event) {
-    const setupModal = document.getElementById('setupModal');
-    const answerModal = document.getElementById('answerModal');
-    
-    if (event.target === setupModal) {
-        setupModal.classList.remove('show');
-    }
-    if (event.target === answerModal) {
-        answerModal.classList.remove('show');
-    }
-};
