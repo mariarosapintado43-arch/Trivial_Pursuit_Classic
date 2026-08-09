@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivial Pursuit Classic</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎮 Trivial Pursuit Classic</h1>
+            <div class="game-info">
+                <div class="player-info" id="playerInfo"></div>
+                <button class="btn-reset" onclick="resetGame()">Nuevo Juego</button>
+            </div>
+        </div>
+
+        <div class="game-area">
+            <!-- Tablero Hexagonal -->
+            <div class="board-container">
+                <svg class="board" viewBox="0 0 600 600" width="600" height="600">
+                    <!-- Centro -->
+                    <circle cx="300" cy="300" r="40" class="center-space" id="center"></circle>
+                    
+                    <!-- Radio Superior Izquierdo (Rosa → Verde → Amarillo → Naranja → Marrón) -->
+                    <g class="radius top-left">
+                        <rect class="square pink" data-pos="0" data-category="entretenimiento"></rect>
+                        <rect class="square green" data-pos="1" data-category="ciencias"></rect>
+                        <rect class="square yellow" data-pos="2" data-category="historia"></rect>
+                        <rect class="square orange" data-pos="3" data-category="deportes"></rect>
+                        <rect class="square brown" data-pos="4" data-category="arte"></rect>
+                        <circle class="hq-marker" data-category="entretenimiento"></circle>
+                    </g>
+
+                    <!-- Radio Superior Derecho (Marrón → Rosa → Amarillo → Azul → Verde) -->
+                    <g class="radius top-right">
+                        <rect class="square brown" data-pos="5" data-category="arte"></rect>
+                        <rect class="square pink" data-pos="6" data-category="entretenimiento"></rect>
+                        <rect class="square yellow" data-pos="7" data-category="historia"></rect>
+                        <rect class="square cyan" data-pos="8" data-category="geografia"></rect>
+                        <rect class="square green" data-pos="9" data-category="ciencias"></rect>
+                        <circle class="hq-marker" data-category="historia"></circle>
+                    </g>
+
+                    <!-- Radio Derecho (Rosa → Naranja → Verde → Azul → Marrón) -->
+                    <g class="radius right">
+                        <rect class="square pink" data-pos="10" data-category="entretenimiento"></rect>
+                        <rect class="square orange" data-pos="11" data-category="deportes"></rect>
+                        <rect class="square green" data-pos="12" data-category="ciencias"></rect>
+                        <rect class="square cyan" data-pos="13" data-category="geografia"></rect>
+                        <rect class="square brown" data-pos="14" data-category="arte"></rect>
+                        <circle class="hq-marker" data-category="entretenimiento"></circle>
+                    </g>
+
+                    <!-- Radio Inferior Derecho (Amarillo → Verde → Marrón → Naranja → Azul) -->
+                    <g class="radius bottom-right">
+                        <rect class="square yellow" data-pos="15" data-category="historia"></rect>
+                        <rect class="square green" data-pos="16" data-category="ciencias"></rect>
+                        <rect class="square brown" data-pos="17" data-category="arte"></rect>
+                        <rect class="square orange" data-pos="18" data-category="deportes"></rect>
+                        <rect class="square cyan" data-pos="19" data-category="geografia"></rect>
+                        <circle class="hq-marker" data-category="rosa"></circle>
+                    </g>
+
+                    <!-- Radio Inferior Izquierdo (Naranja → Amarillo → Marrón → Azul → Rosa) -->
+                    <g class="radius bottom-left">
+                        <rect class="square orange" data-pos="20" data-category="deportes"></rect>
+                        <rect class="square yellow" data-pos="21" data-category="historia"></rect>
+                        <rect class="square brown" data-pos="22" data-category="arte"></rect>
+                        <rect class="square cyan" data-pos="23" data-category="geografia"></rect>
+                        <rect class="square pink" data-pos="24" data-category="entretenimiento"></rect>
+                        <circle class="hq-marker" data-category="ciencias"></circle>
+                    </g>
+
+                    <!-- Radio Izquierdo (Amarillo → Rosa → Naranja → Verde → Azul) -->
+                    <g class="radius left">
+                        <rect class="square yellow" data-pos="25" data-category="historia"></rect>
+                        <rect class="square pink" data-pos="26" data-category="entretenimiento"></rect>
+                        <rect class="square orange" data-pos="27" data-category="deportes"></rect>
+                        <rect class="square green" data-pos="28" data-category="ciencias"></rect>
+                        <rect class="square cyan" data-pos="29" data-category="geografia"></rect>
+                        <circle class="hq-marker" data-category="arte"></circle>
+                    </g>
+                </svg>
+
+                <!-- Fichas de jugadores -->
+                <div class="pieces-container" id="piecesContainer"></div>
+            </div>
+
+            <!-- Panel de control lateral -->
+            <div class="control-panel">
+                <div class="panel-section">
+                    <h3>Jugadores</h3>
+                    <div id="playersList" class="players-list"></div>
+                    <button class="btn btn-primary" onclick="togglePlayerSetup()">Configurar Jugadores</button>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Turno Actual</h3>
+                    <div id="currentTurn" class="turn-display">
+                        <p>Esperando configuración...</p>
+                    </div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Controles</h3>
+                    <button class="btn btn-primary" id="diceBtn" onclick="rollDice()" disabled>🎲 Tirar Dado</button>
+                    <div id="diceResult" class="dice-result"></div>
+                </div>
+
+                <div class="panel-section">
+                    <h3>Pregunta</h3>
+                    <div id="questionArea" class="question-area"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para configurar jugadores -->
+    <div id="setupModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="togglePlayerSetup()">&times;</span>
+            <h2>Configurar Jugadores</h2>
+            <div class="setup-form">
+                <label>Número de jugadores:</label>
+                <select id="playerCount" onchange="updatePlayerInputs()">
+                    <option value="1">1 jugador</option>
+                    <option value="2" selected>2 jugadores</option>
+                    <option value="3">3 jugadores</option>
+                    <option value="4">4 jugadores</option>
+                </select>
+
+                <div id="playerInputs" class="player-inputs"></div>
+
+                <button class="btn btn-primary" onclick="startGame()">Comenzar Juego</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para responder preguntas -->
+    <div id="answerModal" class="modal">
+        <div class="modal-content modal-large">
+            <span class="close" onclick="closeAnswerModal()">&times;</span>
+            <div id="answerContent"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
